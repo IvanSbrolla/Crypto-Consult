@@ -1,15 +1,21 @@
 const puppeteer = require('puppeteer')
+var readline = require('readline');
 
-function cryptoConsult(moeda) {
-    this.moeda = moeda
+function cryptoConsult() {
+    new Promise(async (resolve, reject) => {
+        this.browser = await newBrowser({ headless: false })
+        resolve(this.browser)
+    }).then(async browser => {
+        this.page = await newPage(browser)
+        return this.page
+    }).then(async page => {
+        await page.goto('https://br.investing.com/crypto/currencies')
+    })
 }
 
 cryptoConsult.prototype.consultCrypto = async function consultCrypto(callback) {
     try {
-        const browser = await newBrowser({ headless: true })
-        const page = await newPage(browser)
-        await page.goto('https://br.investing.com/crypto/currencies');
-        await page.evaluate((moeda) => {
+        await this.page.evaluate((moeda) => {
             tableRow = document.querySelector(`td[title="${moeda[0]}"]`).parentElement
             const data = {
                 val_nome: tableRow.children[2].getAttribute('title'),
@@ -34,7 +40,11 @@ const newBrowser = async (options) => {
 const newPage = async (browser) => {
     return await browser.newPage()
 }
+const closeApp = async (browser) => {
+    browser.close()
+}
 
 module.exports = {
-    cryptoConsult
+    cryptoConsult,
+    closeApp
 }
